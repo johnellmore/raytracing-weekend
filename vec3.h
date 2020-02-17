@@ -1,6 +1,7 @@
 #ifndef VEC3H
 #define VEC3H
 
+#include "random.h"
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
@@ -136,6 +137,22 @@ inline vec3& vec3::operator/=(const float t) {
 
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
+}
+
+vec3 reflect(const vec3& v, const vec3& n) {
+    return v - 2*dot(v, n)*n;
+}
+
+vec3 random_in_unit_sphere() {
+    vec3 p;
+    do {
+        p = 2.0*vec3(
+            random_double(),
+            random_double(),
+            random_double()
+        ) - vec3(1, 1, 1);
+    } while (p.squared_length() >= 1.0);
+    return p;
 }
 
 #endif
