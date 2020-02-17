@@ -1,6 +1,8 @@
 #include "float.h"
 #include "hittable_list.h"
 #include "sphere.h"
+#include "camera.h"
+#include "random.h"
 #include <iostream>
 
 inline vec3 normal_to_color(const vec3& vec) {
@@ -26,18 +28,21 @@ int main() {
     int nx = 200;
     int ny = 100;
 
+    // the number of samples per pixel (antialiasing)
+    int ns = 100;
+
     // PPM fileheader
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
 
-    vec3 lower_left_corner(-2.0, -1.0, -1.0); // scan origin
-    vec3 horizontal(4.0, 0.0, 0.0); // scan x range
-    vec3 vertical(0.0, 2.0, 0.0); // scan y range
-    vec3 origin(0.0, 0.0, 0.0);
-
+    // make a world which contains all of the circles that we want
+    // to render
     hittable *list[2];
     list[0] = new sphere(vec3(0, 0, -1), 0.5);
     list[1] = new sphere(vec3(0, -100.5, -1), 100);
     hittable *world = new hittable_list(list, 2);
+
+    // the camera that is viewing the world
+    camera cam;
 
     // the scan directions treat the image as if it's in quadrant
     // 1 of the cartesion plane, rather than quadrant 4 (like
@@ -47,17 +52,14 @@ int main() {
     for (int j = ny-1; j >= 0; j--) {
         // scan from left to right (i)
         for (int i = 0; i < nx; i++) {
-            // find the proportion across the image that we are,
-            // in the range [0..1]
-            float u = float(i) / float(nx);
-            float v = float(j) / float(ny);
-
-            // make a ray shooting from this point
-            ray r(origin, lower_left_corner + u*horizontal + v*vertical);
-
-            // find the color that this ray sees
-            // vec3 p = r.point_at_parameter(2.0);
-            vec3 col = color(r, world);
+            vec3 col(0, 0, 0);
+            for (int s = 0; s < ns; s++) {
+                float u = float(i + random_double()) / float(nx);
+                float v = float(j + random_double()) / float(ny);
+                ray r = cam.get_ray(u, v);
+                col += color(r, world);
+            }
+            col /= float(ns);
 
             // convert the color to PPM int output and print
             int ir = int(255.99*col[0]);
