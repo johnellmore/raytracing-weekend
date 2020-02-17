@@ -1,3 +1,3 @@
 #/bin/bash
-g++ -Wall raytracing.cpp -o ray
+g++ -Wall main.cpp -o ray
 ./ray > test.ppm
